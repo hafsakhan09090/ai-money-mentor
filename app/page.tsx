@@ -35,16 +35,12 @@ export default function Home() {
     if (!e.target.files?.[0]) return;
     const file = e.target.files[0];
     const text = await file.text();
-    const transactions = parseCSV(text);
-    handleSubmit('mf-xray', { transactions });
-  };
-
-  const parseCSV = (csv: string) => {
-    const lines = csv.split('\n').slice(1);
-    return lines.map(line => {
+    const lines = text.split('\n').slice(1);
+    const transactions = lines.map(line => {
       const [date, amount, name] = line.split(',');
       return { date, amount: parseFloat(amount), fundName: name };
     }).filter(t => !isNaN(t.amount));
+    handleSubmit('mf-xray', { transactions });
   };
 
   return (
@@ -85,7 +81,7 @@ export default function Home() {
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
               <input
                 type="file"
-                accept=".csv,.xlsx"
+                accept=".csv"
                 onChange={handleFileUpload}
                 className="hidden"
                 id="file-upload"
@@ -96,7 +92,7 @@ export default function Home() {
               >
                 Upload Statement
               </label>
-              <p className="text-sm text-gray-500 mt-2">CSV or Excel format from CAMS/KFintech</p>
+              <p className="text-sm text-gray-500 mt-2">CSV format from CAMS/KFintech</p>
             </div>
             {loading && <div className="mt-4 text-center">Analyzing your portfolio...</div>}
             {result && (
