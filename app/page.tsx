@@ -8,8 +8,6 @@ export default function Home() {
     age: '',
     income: '',
     expenses: '',
-    investments: '',
-    goal: '',
     salary: '',
     rent: '',
     nps: '',
@@ -17,17 +15,20 @@ export default function Home() {
   });
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
 
   const handleSubmit = async (type: string, data: any) => {
     setLoading(true);
-    const res = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, data })
-    });
-    const json = await res.json();
-    setResult(json);
+    try {
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, data })
+      });
+      const json = await res.json();
+      setResult(json);
+    } catch (error) {
+      console.error('Error:', error);
+    }
     setLoading(false);
   };
 
@@ -44,7 +45,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <div className="bg-blue-700 text-white py-8">
         <div className="max-w-5xl mx-auto px-4">
           <h1 className="text-3xl font-bold">💰 AI Money Mentor</h1>
@@ -159,22 +160,16 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="font-semibold">Old Regime Tax</p>
-                    <p className="text-xl">₹{result.oldRegimeTax.toLocaleString()}</p>
+                    <p className="text-xl">₹{result.oldRegimeTax?.toLocaleString()}</p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="font-semibold">New Regime Tax</p>
-                    <p className="text-xl">₹{result.newRegimeTax.toLocaleString()}</p>
+                    <p className="text-xl">₹{result.newRegimeTax?.toLocaleString()}</p>
                   </div>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg">
-                  <p className="font-semibold">You can save ₹{result.savings.toLocaleString()}</p>
-                  <p className="text-sm mt-2">Missed deductions: {result.missedDeductions.join(', ')}</p>
-                </div>
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="font-semibold">Recommended Tax-Saving Investments</p>
-                  <ul className="text-sm mt-2 space-y-1">
-                    {result.recommendations?.map((rec: string, i: number) => <li key={i}>• {rec}</li>)}
-                  </ul>
+                  <p className="font-semibold">You can save ₹{result.savings?.toLocaleString()}</p>
+                  <p className="text-sm mt-2">Missed deductions: {result.missedDeductions?.join(', ')}</p>
                 </div>
               </div>
             )}
@@ -207,13 +202,6 @@ export default function Home() {
                 value={formData.expenses}
                 onChange={e => setFormData({ ...formData, expenses: e.target.value })}
               />
-              <input
-                type="text"
-                placeholder="Financial Goal (e.g., retire at 45, buy house)"
-                className="w-full border rounded-lg p-2"
-                value={formData.goal}
-                onChange={e => setFormData({ ...formData, goal: e.target.value })}
-              />
               <button
                 onClick={() => handleSubmit('fire', formData)}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
@@ -226,21 +214,17 @@ export default function Home() {
               <div className="mt-6 space-y-4">
                 <div className="bg-green-50 p-4 rounded-lg">
                   <p className="font-semibold">Monthly SIP Required</p>
-                  <p className="text-2xl">₹{result.monthlySIP.toLocaleString()}</p>
+                  <p className="text-2xl">₹{result.monthlySIP?.toLocaleString()}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="text-sm">Target Corpus</p>
-                    <p className="font-semibold">₹{result.targetCorpus.toLocaleString()}</p>
+                    <p className="font-semibold">₹{result.targetCorpus?.toLocaleString()}</p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="text-sm">Years to Goal</p>
                     <p className="font-semibold">{result.yearsToGoal} years</p>
                   </div>
-                </div>
-                <div className="bg-yellow-50 p-4 rounded-lg">
-                  <p className="font-semibold">Asset Allocation</p>
-                  <p className="text-sm">{result.assetAllocation}</p>
                 </div>
               </div>
             )}
@@ -272,19 +256,6 @@ export default function Home() {
                 <div className="text-center">
                   <div className="text-5xl font-bold text-blue-600">{result.score}/100</div>
                   <p className="text-gray-600 mt-2">{result.rating}</p>
-                </div>
-                <div className="space-y-3">
-                  {Object.entries(result.dimensions).map(([key, val]: any) => (
-                    <div key={key}>
-                      <div className="flex justify-between text-sm">
-                        <span>{key}</span>
-                        <span>{val}/20</span>
-                      </div>
-                      <div className="bg-gray-200 rounded-full h-2">
-                        <div className="bg-blue-600 rounded-full h-2" style={{ width: `${val * 5}%` }}></div>
-                      </div>
-                    </div>
-                  ))}
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="font-semibold">Recommendations</p>
